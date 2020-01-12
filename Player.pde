@@ -261,7 +261,8 @@ class Player {
   }
   
   void display(PVector offset) {
-    curSprite.display(offset);
+    updateSpritePos(offset);
+    curSprite.display();
   }
   
   void tint(int r, int g, int b) {
@@ -280,6 +281,14 @@ class Player {
     
     curSprite.pos.x = position.x;
     curSprite.pos.y = position.y;
+    curSprite.pos.z = position.z;
+    
+  }
+  
+  void updateSpritePos(PVector offset) {
+    
+    curSprite.pos.x = position.x-offset.x;
+    curSprite.pos.y = position.y-offset.y;
     curSprite.pos.z = position.z;
     
   }

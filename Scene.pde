@@ -70,8 +70,17 @@ class Scene {
       case BIRDSEYE:
         player1.display(position);
       break;
+      
       case SIDESCROLL:
+        
+        
+        centerOnPlayer(player1);
+        constrainToMapBoundaries(map);
+        
         player1.display(position);
+        
+        
+        
       break;
     }
   }
