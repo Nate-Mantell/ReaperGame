@@ -299,8 +299,8 @@ class Player {
   }
   
   
-  void move(float mx, float my) {
-    position.x = mx; position.y = my;
+  void move(PVector newPosition) {
+    position.set(newPosition);
     updateSpritePos();
   }
   

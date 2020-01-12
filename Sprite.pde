@@ -79,6 +79,16 @@ class Sprite {
      }
   }
   
+  void display (float xOff, float yOff, float wid, float hei) {
+     if(visible) {
+       if(tint) {
+         tint(tintr,tintg,tintb);
+       }
+       image.display(xOff+pos.x,yOff+pos.y-(pos.z/2),wid,hei);
+       noTint();
+     }
+  }
+  
   
   void tint(int r, int g, int b) {
     tint=true;

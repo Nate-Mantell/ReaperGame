@@ -3,6 +3,7 @@ int programState;
 
 Animation[] mapImg = new Animation[15];
 Animation[] playerImg = new Animation[1];
+Animation[] itemImg = new Animation[3];
 
 
 TilePalette mapTilePalette;
@@ -16,6 +17,9 @@ Scene scene;
 Controls controls;
 
 MapView mapView;
+
+
+GameObjectFactory gameObjectFactory;
 
 
 void setup() {
@@ -39,14 +43,19 @@ void setup() {
   
   playerImg[0] = new Animation("Reaper_Walk_64x64",".png",13,10,64,64,true,true);
   
+  itemImg[0] = new Animation("ass1",".png",1,0,false,false);
+  itemImg[1] = new Animation("ass1",".png",1,0,false,false);
+  itemImg[2] = new Animation("item1",".png",5,30,true,true);
+  
   mapTilePalette = new TilePalette(mapImg);
   map = new Map(50, 50, 32, 32, mapTilePalette);
 
-  map.loadMap("BirdsEyeMap.json");
+
+  gameObjectFactory = new GameObjectFactory(itemImg);
   
   mapView = new MapView(map);
  
-  scene = new Scene(playerImg, map, width, height);
+  scene = new Scene(playerImg, gameObjectFactory, map, width, height);
   controls = new Controls(width, height, scene);
  
   programState=1;
@@ -56,6 +65,8 @@ void setup() {
 
 ///// Asynchronous Load method for Loading Screen
 void loadGame() {
+  
+  scene.loadLevel("BirdsEyeMap.json");
   
   mapView.compile();
   

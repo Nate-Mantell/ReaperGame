@@ -14,6 +14,10 @@ class Scene {
   
   Player player1;
   
+  PVector playerInitialPosition;
+  
+  GameObjectFactory gameObjectFactory;
+  
   int viewW;
   int viewH;
   
@@ -21,9 +25,15 @@ class Scene {
   
   PlayMode mode; 
   
-  Scene(Animation[] iplayerAnimations, Map imap, int scrW, int scrH) {
+  ArrayList<Collision> collisions; 
+  
+  
+  Scene(Animation[] iplayerAnimations, GameObjectFactory igameObjectFactory, Map imap, int scrW, int scrH) {
     position = new PVector(0,0);
     playerAnimations = iplayerAnimations;
+    
+    gameObjectFactory = igameObjectFactory;
+    
     map = imap;
     viewW = scrW;
     viewH = scrH;
@@ -31,6 +41,9 @@ class Scene {
     changed = false;
     
     mode = PlayMode.SIDESCROLL;
+    
+    
+    playerInitialPosition = new PVector(0,0,0);
     
     buildPlayer1();
   }
@@ -40,7 +53,7 @@ class Scene {
      ArrayList<Sprite> p1Sprites = new ArrayList<Sprite>();
      p1Sprites.add(new Sprite(playerImg[0],new PVector(0,0,0),64,64,true));
      
-     player1 = new Player(map.playerInitialPosition,10,10,0,10,new Weapon(),p1Sprites,new Collider(0,0,32,10,0), this);
+     player1 = new Player(playerInitialPosition,10,10,0,10,new Weapon(),p1Sprites,new Collider(0,0,32,10,0), this);
        
   }
   
@@ -51,7 +64,71 @@ class Scene {
         player1.step();
       break;
       case SIDESCROLL:
+      
         player1.step();
+      
+      
+        //check if the player or enemies collide with game objects
+        for(int i = 0; i < gameObjectFactory.gameObjects.size(); i++) {
+           collisions = player1.footCollider.collide(gameObjectFactory.gameObjects.get(i).curCollider);
+           
+           if(collisions.size() > 0) {
+              switch(gameObjectFactory.gameObjects.get(i).collisionEffect) {
+                case BLOCK:
+                  player1.addPos(-player1.vx*2,-player1.vy*2,0);
+                  player1.stop();
+                  
+                break;
+                case OBTAIN:
+                  if(gameObjectFactory.gameObjects.get(i).consume() == true) {
+                    //sceneScript.itemConsumed(gameObjectFactory.gameObjects.get(i));
+                    gameObjectFactory.gameObjects.remove(i);
+                    i--;
+                  }
+                continue;
+                case DAMAGE:
+                break;
+                case SLOW:
+                break;
+                case TELEPORT:
+                break;
+                case ACTIVATE:
+                break;
+                case UNLOCK:
+                break;
+              }
+              
+              
+           }
+           
+           /*
+           for(int j = 0; j < enemyFactory.enemies.size(); j++) {
+             collisions = enemyFactory.enemies.get(j).curCollider.collide(gameObjectFactory.gameObjects.get(i).curCollider);
+           
+             if(collisions.size() > 0) {
+                switch(gameObjectFactory.gameObjects.get(i).collisionEffect) {
+                  case BLOCK:
+                    collisions.get(0).determineDirection();
+                  
+                    enemyFactory.enemies.get(j).addPos(-enemyFactory.enemies.get(j).vx*2,-enemyFactory.enemies.get(j).vy*2,0);
+                    enemyFactory.enemies.get(j).stop();
+                    
+                    enemyFactory.enemies.get(j).respondToBarrier(collisions.get(0));
+                  break;
+                  case DAMAGE:
+                  break;
+                  case SLOW:
+                  break;
+                  default:
+                  break;
+                }
+             }
+           }
+           */
+           
+        }
+      
+      
       break;
     }
     sceneDidChange();
@@ -145,6 +222,23 @@ class Scene {
   void spawnPlayerBullet(PVector playerPosition, Weapon w) {
     
   }
+  
+  
+  void loadLevel(String fname) {
+    JSONObject objMaster = loadJSONObject(fname);
+    
+    JSONObject obj = objMaster.getJSONObject("player");
+    playerInitialPosition = new PVector(obj.getFloat("x"),obj.getFloat("y"),obj.getFloat("z"));
+    
+    player1.move(playerInitialPosition);
+      
+    JSONArray array = objMaster.getJSONArray("gameObjects");
+    gameObjectFactory.loadGameObjects(array);
+      
+    map.loadMap(objMaster);
+    
+  }
+  
   
   void sceneDidChange() {
     changed = true;

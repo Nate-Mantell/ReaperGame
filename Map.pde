@@ -6,8 +6,6 @@ class Map {
   
   PVector mapPosition;
   
-  PVector playerInitialPosition;
-  
   TilePalette mapTilePalette;
   
   Map(int isizeX, int isizeY,int itileW, int itileH, TilePalette imapTilePalette) {
@@ -18,7 +16,6 @@ class Map {
     tiles = new int[sizeX*sizeY];
     
     mapPosition = new PVector(0,0);
-    playerInitialPosition = new PVector(0,0,0);
     
     mapTilePalette = imapTilePalette;
   }
@@ -70,15 +67,22 @@ class Map {
     JSONArray array = objMaster.getJSONArray("map");
     JSONObject objTile;
     
-    JSONObject obj = objMaster.getJSONObject("player");
-    playerInitialPosition = new PVector(obj.getFloat("x"),obj.getFloat("y"),obj.getFloat("z"));
-      
-    
     for(int i = 0; (i < array.size()) && (i < tiles.length); i++) {
       objTile = array.getJSONObject(i);
       tiles[i] = objTile.getInt("tile");
     }
     
+    
+  }
+  
+  void loadMap(JSONObject objMaster) {
+    JSONArray array = objMaster.getJSONArray("map");
+    JSONObject objTile;
+    
+    for(int i = 0; (i < array.size()) && (i < tiles.length); i++) {
+      objTile = array.getJSONObject(i);
+      tiles[i] = objTile.getInt("tile");
+    }
     
   }
   
