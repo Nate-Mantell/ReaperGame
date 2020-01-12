@@ -1,2 +1,5 @@
+#Ignore .DS_Store file
+.DS_Store
+
 # Ignore data folder
 data
