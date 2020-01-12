@@ -3,6 +3,14 @@ enum PlayMode {
   SIDESCROLL
 }
 
+class PlayerAction {
+   boolean WALKRIGHT,
+   WALKLEFT,
+   JUMP,
+   ATTACK,
+   USEITEM;
+}
+
 
 class Scene {
   
@@ -23,9 +31,13 @@ class Scene {
   
   boolean changed;
   
+  boolean jumpLock;
+  
   PlayMode mode; 
   
   ArrayList<Collision> collisions; 
+  
+  PlayerAction playerActions;
   
   
   Scene(Animation[] iplayerAnimations, GameObjectFactory igameObjectFactory, Map imap, int scrW, int scrH) {
@@ -40,18 +52,28 @@ class Scene {
     
     changed = false;
     
+    jumpLock = false;
+    
     mode = PlayMode.SIDESCROLL;
     
+    playerActions = new PlayerAction();
     
     playerInitialPosition = new PVector(0,0,0);
     
     buildPlayer1();
+    
+    playerActions.WALKRIGHT=false;
+    playerActions.WALKLEFT=false;
+    playerActions.JUMP=false;
+    playerActions.ATTACK=false;
+    playerActions.USEITEM=false;
   }
   
   void buildPlayer1() {
      
      ArrayList<Sprite> p1Sprites = new ArrayList<Sprite>();
      p1Sprites.add(new Sprite(playerImg[0],new PVector(0,0,0),64,64,true));
+     p1Sprites.add(new Sprite(playerImg[1],new PVector(0,0,0),64,64,true));
      
      player1 = new Player(playerInitialPosition,10,10,0,10,new Weapon(),p1Sprites,new Collider(0,0,32,10,0), this);
        
@@ -65,6 +87,7 @@ class Scene {
       break;
       case SIDESCROLL:
       
+        resolveControls();
         player1.step();
       
       
@@ -75,8 +98,11 @@ class Scene {
            if(collisions.size() > 0) {
               switch(gameObjectFactory.gameObjects.get(i).collisionEffect) {
                 case BLOCK:
-                  player1.addPos(-player1.vx*2,-player1.vy*2,0);
-                  player1.stop();
+                  player1.bounce(collisions,1,0.001); 
+                  
+                  controls.addMessage(collisions.get(0).toString());
+                  //TODO: give gameObject a bounciness value to use as the friction coefficient
+                  //player1.stop();
                   
                 break;
                 case OBTAIN:
@@ -183,11 +209,15 @@ class Scene {
   }
   
   void buttonPressedUp() {
-    
+    if(!jumpLock) {
+      jumpLock=true;
+      playerActions.JUMP=true;
+    }
   }
   
   void buttonReleasedUp() {
-    
+    playerActions.JUMP=false;
+    jumpLock=false;
   }
   
   void buttonPressedDown() {
@@ -199,23 +229,48 @@ class Scene {
   }
   
   void buttonPressedRight() {
-    player1.walkRight();
+    playerActions.WALKRIGHT = true;
+    
   }
   
   void buttonReleasedRight() {
-    player1.vx = 0;
+    playerActions.WALKRIGHT = false;
+    //player1.vx = 0;
   }
   
   void buttonPressedLeft() {
-    player1.walkLeft();
+    playerActions.WALKLEFT = true;
   }
   
   void buttonReleasedLeft() {
-    player1.vx = 0;
+    playerActions.WALKLEFT = false;
+    //player1.vx = 0;
   }
   
   void buttonPressedStop() {
     
+  }
+  
+  void resolveControls() {
+      if(playerActions.WALKRIGHT) {
+        player1.walkRight();
+        controls.addMessage("walk right");
+      }
+      if(playerActions.WALKLEFT) {
+        player1.walkLeft();
+        controls.addMessage("walk left");
+      }
+      if(playerActions.JUMP) {
+        player1.jump();
+        playerActions.JUMP = false;
+        controls.addMessage("jump");
+      }
+      if(playerActions.ATTACK) {
+      
+      }
+      if(playerActions.USEITEM) {
+      
+      }
   }
   
   

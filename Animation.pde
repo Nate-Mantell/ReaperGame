@@ -149,6 +149,17 @@ class Animation {
     image(images[frame],pos.x,pos.y);
   }
   
+  
+  void displayFlipped(PVector pos, int dx, int dy) {
+    pushMatrix();
+    if(dx == 0) dx = 1;
+    if(dy == 0) dy = 1;
+    scale(-1, dy);
+    //image(images[frame],pos.x+(-((abs(dx)-dx)/2)*images[frame].width),pos.y);
+    image(images[frame],dx*pos.x,dy*pos.y);
+    popMatrix();
+  }
+  
   void display(float x, float y) {
     image(images[frame],x,y);
   }

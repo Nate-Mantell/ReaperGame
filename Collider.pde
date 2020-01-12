@@ -131,7 +131,7 @@ class Collision {
     type = it;
   }
   
-  void determineDirection() {
+  CollisionType determineDirection() {
     float xa1,xa2,ya1,ya2,xb1,xb2,yb1,yb2;
      
     xa1 = a.cx1;
@@ -212,7 +212,40 @@ class Collision {
       }
     }  
     
+    return type;
   }
   
+  String toString() {
+    switch(type) {
+      case C_BOTTOM:
+        return "C_BOTTOM";
+
+      case C_LOWER_RIGHT:
+        return "C_LOWER_RIGHT";
+
+      case C_LOWER_LEFT:
+        return "C_LOWER_LEFT";
+
+      case C_RIGHT:
+        return "C_RIGHT";
+
+      case C_LEFT:
+        return "C_LEFT";
+
+      case C_TOP:
+        return "C_TOP";
+
+      case C_UPPER_RIGHT:
+        return "C_UPPER_RIGHT";
+
+      case C_UPPER_LEFT:
+        return "C_UPPER_LEFT";
+
+      default:
+      case C_UNKNOWN:
+        return "C_UNKNOWN";
+
+    }
+  }
   
 }

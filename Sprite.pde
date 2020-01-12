@@ -51,6 +51,10 @@ class Sprite {
     image.display(pos);
   }
   
+  void displayFlipped(int dx, int dy) {
+    image.displayFlipped(pos,dx,dy);
+  }
+  
   void display (PVector offset) {
      if(visible) {
        if(tint) {

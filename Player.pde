@@ -15,6 +15,9 @@ class Player {
   int state,returnState,stateTimer;
   PVector position;
   float vx,vy,vz, acc,baseacc, arv;
+  
+  PVector baseFriction, friction;
+  
   int dx,dy;
   
   boolean sidescroll;
@@ -26,6 +29,10 @@ class Player {
     vx=0;vy=0;vz=0;
     acc = 1; baseacc = 1; 
     arv = 0;
+    
+    baseFriction = new PVector(0.8,0.96,0.8);
+    friction = new PVector();
+    friction.set(baseFriction);
     
     sidescroll = true;
 
@@ -65,33 +72,41 @@ class Player {
   void walkRight() {
     if(state == 2) return;
     vx = acc+arv;
-    vy = 0;
+    //vy = 0;
     dx = 1;
     dy = 0;
+    
+    curSprite = sprites.get(0);
   }
   
   void runRight() {
     if(state == 2) return;
     vx = acc*2+arv;
-    vy = 0;
+    //vy = 0;
     dx = 1;
     dy = 0;
+    
+    curSprite = sprites.get(0);
   }
   
   void walkLeft() {
     if(state == 2) return;
     vx = -(acc+arv);
-    vy = 0;
+    //vy = 0;
     dx = -1;
     dy = 0;
+    
+    curSprite = sprites.get(1);
   }
   
   void runLeft() {
     if(state == 2) return;
     vx = -(acc*2+arv);
-    vy = 0;
+    //vy = 0;
     dx = -1;
     dy = 0;
+    
+    curSprite = sprites.get(1);
   }
   
   void walkUp() {
@@ -134,7 +149,13 @@ class Player {
   void jump() {
     if(state == 2) return;
     //soundEffects.playerEffects.get(1).play();
-    if(position.z == 0) vz = acc*5;
+    
+    if(sidescroll) {
+      if(vy >= -0.5 && vy <= 0.5) vy = -acc*5;
+      friction.set(baseFriction);
+    } else {
+      if(position.z == 0) vz = acc*5;
+    }
   }
   
   void damage(int damage, Collision c) {
@@ -236,21 +257,125 @@ class Player {
     position.x+=vx; position.y+=vy; position.z+=vz;
     
     
-    //gravity for jumping and ground collision
-    if(position.z > 0) {
-      vz-=0.5;
+    //gravity for jumping, ground collision, and friction
+    if(sidescroll) {
+      //if(vy < -0.5) {
+        vy+=0.5;
+      //} else {
+      //  vy = 0;
+      //}
+      
+      vx *= friction.x;
+      vy *= friction.y;
+      vz *= friction.z;
     } else {
-      position.z = 0;
-      vz = 0;
+      if(position.z > 0) {
+        vz-=0.5;
+      } else {
+        position.z = 0;
+        vz = 0;
+      }
     }
+    
+    //reset the friction after any ground and object frictions may have been applied
+    friction.set(baseFriction);
+    
     
     //update the Sprites' positions now that the physical attributes have been updated
     updateSpritePos();
     
     updateColliderPos();
     
+  }
+  
+  void bounce(ArrayList<Collision> collisions, float bfriction) {
+    switch(collisions.get(0).determineDirection()) {
+      case C_BOTTOM:
+        //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
+        vy = -abs(vy) * bfriction;
+        break;
+      case C_LOWER_RIGHT:
+      case C_LOWER_LEFT:
+        //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
+        vy = -abs(vy) * bfriction;
+        vx *= -1 * bfriction;
+        break;
+      case C_RIGHT:
+      case C_LEFT:
+        vx *= -1 * bfriction;
+        break;
+      case C_TOP:
+        vy = abs(vy) * bfriction;
+        break;
+      case C_UPPER_RIGHT:
+      case C_UPPER_LEFT:
+        vy *= abs(vy) * bfriction;
+        vx *= -1 * bfriction;
+        break;
+      case C_UNKNOWN:
+        break;
+    }
     
+    updateColliderPos();
+  }
+  
+  
+  void bounce(ArrayList<Collision> collisions, float bfrictionx, float bfrictiony) {
+    switch(collisions.get(0).determineDirection()) {
+      case C_BOTTOM:
+        //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
+        vy = -abs(vy) * bfrictiony;
+        break;
+      case C_LOWER_RIGHT:
+      case C_LOWER_LEFT:
+        //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
+        vy = -abs(vy) * bfrictiony;
+        vx = -vx;
+        break;
+      case C_RIGHT:
+      case C_LEFT:
+        vx = -vx;
+        break;
+      case C_TOP:
+        vy = abs(vy) * bfrictiony;
+        break;
+      case C_UPPER_RIGHT:
+      case C_UPPER_LEFT:
+        vy *= abs(vy) * bfrictiony;
+        vx = -vx;
+        break;
+      case C_UNKNOWN:
+        break;
+    }
     
+    updateColliderPos();
+  }
+  
+   void bounce(ArrayList<Collision> collisions) {
+    switch(collisions.get(0).determineDirection()) {
+      case C_BOTTOM:
+        vy = -abs(vy);
+        break;
+      case C_TOP:
+        vy *= -1;
+        break;
+      case C_LOWER_RIGHT:
+      case C_LOWER_LEFT:
+        vy *= -1;
+        vx *= -1;
+        break;
+      case C_RIGHT:
+      case C_LEFT:
+        vx *= -1;
+        break;
+      case C_UPPER_RIGHT:
+      case C_UPPER_LEFT:
+        vy *= -1;
+        vx *= -1;
+        break;
+      case C_UNKNOWN:
+        break;
+    }
   }
   
   void addPos(float xAdd, float yAdd, float zAdd) {
@@ -395,11 +520,11 @@ class Player {
       //damage
       case 2:
         vx*=0.8;
-        vy*=0.8;
+        //vy*=0.8;
         stateTimer--;
         if(stateTimer <= 0) {
           vx=0;
-          vy=0;
+          //vy=0;
           state = returnState;
         }
       break;
@@ -419,6 +544,7 @@ class Player {
           curSprite = sprites.get(0);
         }
       break;
+      //armor
       case 5:
         incrementAP();
         stateTimer--;

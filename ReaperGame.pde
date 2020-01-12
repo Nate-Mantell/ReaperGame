@@ -2,7 +2,7 @@ int programState;
 
 
 Animation[] mapImg = new Animation[15];
-Animation[] playerImg = new Animation[1];
+Animation[] playerImg = new Animation[2];
 Animation[] itemImg = new Animation[3];
 
 
@@ -41,7 +41,8 @@ void setup() {
   mapImg[13] = new Animation("cave1",".png",1,0,false,false);
   mapImg[14] = new Animation("black1",".png",1,0,false,false);
   
-  playerImg[0] = new Animation("Reaper_Walk_64x64",".png",13,10,64,64,true,true);
+  playerImg[0] = new Animation("Reaper_Walk_Right_64x64",".png",13,10,64,64,true,true);
+  playerImg[1] = new Animation("Reaper_Walk_Left_64x64",".png",13,10,64,64,true,true);
   
   itemImg[0] = new Animation("ass1",".png",1,0,false,false);
   itemImg[1] = new Animation("ass1",".png",1,0,false,false);

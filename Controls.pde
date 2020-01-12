@@ -1,14 +1,20 @@
 void keyPressed() {
-  //ActiveControls.handleKeyPressed(keyCode);
+  ActiveControls.handleKeyPressed(keyCode);
 }
 
 void keyReleased() {
-  //ActiveControls.handleKeyReleased(keyCode);
+  ActiveControls.handleKeyReleased(keyCode);
 }
 
 Controls ActiveControls;
+boolean[] keyReleased;
+
 
 class Controls {
+  
+  String messages;
+  
+  
   
   int x, y, w, h;
   color bgCol;
@@ -37,6 +43,19 @@ class Controls {
   
   
   Controls(int ScrW, int ScrH, Scene iscene) {
+    PFont font;
+    font = createFont("Trattatello-48.vlw",48);
+    textFont(font);
+    
+    messages = "";
+    
+    keyReleased = new boolean[256];
+    keyReleased[37]=false;
+    keyReleased[39]=false;
+    keyReleased[38]=false;
+    keyReleased[40]=false;
+    keyReleased[32]=false;
+    
     x=0;
     y=ScrH-250;
     w=ScrW;
@@ -74,7 +93,7 @@ class Controls {
     
     buttonLeft = new Button(x+50,y+100,50,50,dPColReleased,dPColPressed,37,new ButtonLeftHandler(scene), new ButtonLeftReleasedHandler(scene));
     buttonRight = new Button(x+150,y+100,50,50,dPColReleased,dPColPressed,39,new ButtonRightHandler(scene), new ButtonRightReleasedHandler(scene));
-    buttonUp = new Button(x+100,y+50,50,50,dPColReleased,dPColPressed,38,new ButtonUpHandler(scene), new DPadReleaseHandler());
+    buttonUp = new Button(x+100,y+50,50,50,dPColReleased,dPColPressed,38,new ButtonUpHandler(scene), new ButtonUpReleasedHandler(scene));
     buttonDown = new Button(x+100,y+150,50,50,dPColReleased,dPColPressed,40,new ButtonDownHandler(scene), new DPadReleaseHandler());
     buttonStop = new Button(x+100,y+100,50,50,dPColReleased,dPColPressed,new ButtonStopHandler(scene), new ButtonStopHandler(scene));
     buttonA = new Button(x+w-300,y+100,50,50,acColReleased,acColPressed,32,bah, new ButtonAReleaseHandler(bah));
@@ -120,8 +139,13 @@ class Controls {
     }
     */
     
-    /*
+    
     //draw the hud
+    textSize(32);
+    fill(0,255,0);
+    text(messages,controls.x+controls.w-500,controls.y+50);
+    
+    /*
     textSize(32);
     fill(255-((float(player1.hp)/float(player1.mhp))*255),((float(player1.hp)/float(player1.mhp))*255),0);
     text("HP: " + player1.hp + "/" + player1.mhp,controls.x+controls.w-550,controls.y+64);
@@ -146,6 +170,8 @@ class Controls {
     weaponUpgradeDialog.display();
     menuDialog.display();
     */
+    
+    messages = "";
   }
   
   void check() {
@@ -163,7 +189,7 @@ class Controls {
     }
     */
     
-    
+    /*
     buttonUp.check(keyCode);
     buttonLeft.check(keyCode);
     buttonRight.check(keyCode);
@@ -172,6 +198,7 @@ class Controls {
     buttonA.check(keyCode);
     buttonB.check();
     //buttonMenu.check();
+    */
     
     /*
     for(int i = 0; i < weaponToggles.size(); i++) {
@@ -181,17 +208,25 @@ class Controls {
   }
   
   void handleKeyPressed(int kcode) {
+    keyReleased[kcode]=false;
+    
     switch(kcode) {
       case 37: //left
         buttonLeft.press();
+      break;
       case 39: //right
         buttonRight.press();
+      break;
       case 38: //up
         buttonUp.press();
+      break;
       case 40: //down
-        buttonDown.press();
+        //buttonDown.press();
+      break;
       case 32: //space
+      break;
     }
+    
   }
   
   void release() {
@@ -206,17 +241,25 @@ class Controls {
   }
   
   void handleKeyReleased(int kcode) {
+    keyReleased[kcode]=true;
+    
     switch(kcode) {
       case 37: //left
         buttonLeft.release();
+      break;
       case 39: //right
         buttonRight.release();
+      break;
       case 38: //up
         buttonUp.release();
+      break;
       case 40: //down
-        buttonDown.release();
+        //buttonDown.release();
+      break;
       case 32: //space
+      break;
     }
+    
   }
   
   void loadSoundEffects() {
@@ -257,7 +300,9 @@ class Controls {
     //weaponToggleGroup.add(weaponToggles.get(weaponToggles.size()-1));
   }
   
-  
+  void addMessage(String message) {
+    messages += "\n" + message;
+  }
   
 }
 
@@ -1344,7 +1389,7 @@ class Button {
   void check(int code) {
     if((mouseX > x && mouseX < x+w && mouseY > y && mouseY < y+h && mousePressed) || (keyPressed && code == kcode)) {
       this.press();
-    } else {
+    } else if(keyReleased[kcode]){
       this.release();
     }
   }
