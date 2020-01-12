@@ -1,3 +1,8 @@
+enum PlayMode {
+  BIRDSEYE,
+  SIDESCROLL
+}
+
 
 class Scene {
   
@@ -12,25 +17,63 @@ class Scene {
   int viewW;
   int viewH;
   
+  boolean changed;
+  
+  PlayMode mode; 
+  
   Scene(Animation[] iplayerAnimations, Map imap, int scrW, int scrH) {
     position = new PVector(0,0);
     playerAnimations = iplayerAnimations;
     map = imap;
     viewW = scrW;
     viewH = scrH;
+    
+    changed = false;
+    
+    mode = PlayMode.SIDESCROLL;
+    
+    buildPlayer1();
+  }
+  
+  void buildPlayer1() {
+     
+     ArrayList<Sprite> p1Sprites = new ArrayList<Sprite>();
+     p1Sprites.add(new Sprite(playerImg[0],new PVector(0,0,0),64,64,true));
+     
+     player1 = new Player(map.playerInitialPosition,10,10,0,10,new Weapon(),p1Sprites,new Collider(0,0,32,10,0), this);
+       
   }
   
   
   void step() {
+    switch(mode) {
+      case BIRDSEYE:
+        player1.step();
+      break;
+      case SIDESCROLL:
+        player1.step();
+      break;
+    }
+    sceneDidChange();
+  }
+  
+  void animate() {
     for(int i = 0; i < playerAnimations.length; i++) {
       playerAnimations[i].animate();
     }
     
+    sceneDidChange();
   }
   
   void display() {
-    map.display(position);
-    player1.display(position);
+    switch(mode) {
+      case BIRDSEYE:
+        player1.display(position);
+      break;
+      case SIDESCROLL:
+        player1.display(position);
+      break;
+    }
   }
   
   void centerOnPlayer(Player p) {
@@ -53,23 +96,39 @@ class Scene {
     
   }
   
-  void scrollUp() {
+  void buttonPressedUp() {
     
   }
   
-  void scrollDown() {
+  void buttonReleasedUp() {
     
   }
   
-  void scrollRight() {
+  void buttonPressedDown() {
     
   }
   
-  void scrollLeft() {
+  void buttonReleasedDown() {
     
   }
   
-  void stopScrolling() {
+  void buttonPressedRight() {
+    player1.walkRight();
+  }
+  
+  void buttonReleasedRight() {
+    player1.vx = 0;
+  }
+  
+  void buttonPressedLeft() {
+    player1.walkLeft();
+  }
+  
+  void buttonReleasedLeft() {
+    player1.vx = 0;
+  }
+  
+  void buttonPressedStop() {
     
   }
   
@@ -78,5 +137,11 @@ class Scene {
     
   }
   
+  void sceneDidChange() {
+    changed = true;
+  }
   
+  void sceneFinishedDisplayingChanges() {
+    changed = false;
+  }
 }

@@ -1,7 +1,7 @@
 class TilePalette {
-  PImage[] palette;
+  Animation[] palette;
   
-  TilePalette(PImage[] ipalette) {
+  TilePalette(Animation[] ipalette) {
     palette = ipalette;
   }
   

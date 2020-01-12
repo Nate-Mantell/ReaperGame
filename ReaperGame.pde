@@ -2,9 +2,7 @@ int programState;
 
 
 Animation[] mapImg = new Animation[15];
-Animation[] playerImg = new Animation[3];
-Animation[] enemyImg = new Animation[5];
-Animation[] itemImg = new Animation[16];
+Animation[] playerImg = new Animation[1];
 
 
 TilePalette mapTilePalette;
@@ -20,9 +18,8 @@ Controls controls;
 MapView mapView;
 
 
-
 void setup() {
-  size(600,600);
+  size(600,800);
   
   mapImg[0] = new Animation("grass1",".png",1,0,false,false);
   mapImg[1] = new Animation("rocks1",".png",1,0,false,false);
@@ -40,9 +37,100 @@ void setup() {
   mapImg[13] = new Animation("cave1",".png",1,0,false,false);
   mapImg[14] = new Animation("black1",".png",1,0,false,false);
   
+  playerImg[0] = new Animation("Reaper_Walk_64x64",".png",13,10,64,64,true,true);
+  
+  mapTilePalette = new TilePalette(mapImg);
+  map = new Map(50, 50, 32, 32, mapTilePalette);
+
+  map.loadMap("BirdsEyeMap.json");
+  
+  mapView = new MapView(map);
+ 
+  scene = new Scene(playerImg, map, width, height);
+  controls = new Controls(width, height, scene);
+ 
+  programState=1;
+  thread("loadGame");
 }
 
-void draw() {
+
+///// Asynchronous Load method for Loading Screen
+void loadGame() {
   
+  mapView.compile();
+  
+  scene.mode = PlayMode.SIDESCROLL;
+  programState = 2;
+  
+}
+
+
+/////////////////State Update Method////
+void updateModel() {
+  
+  scene.step();
+}
+
+
+void draw() {
+ 
+ switch(programState) {
+ 
+   case 2: //Sidescrolling Play Mode
+     
+     //Handle the UI and model
+     controls.check();
+   
+     updateModel();
+   
+   
+     //Handle the view
+     if(scene.changed || mapView.changed) {
+       background(0,0,0);
+       mapView.display(int(scene.position.x),int(scene.position.y));
+       scene.display();
+       
+       mapView.mapviewFinishedDisplayingChanges();
+       scene.sceneFinishedDisplayingChanges();
+     }
+   
+   
+     scene.animate();
+     mapView.animate();
+   
+   
+     //Draw the controls overlay
+     controls.display();
+   
+   
+     //Set the scene back to static, unchanged state because we drew the previous changes
+     scene.changed = false;
+ 
+ 
+  break;
+ 
+ 
+  case -1: //Debug View
+     //map.displayMapFileDebug();
+     break;
+   
+  case 1: //Loading Screen
+  
+     //displayLoadingScreen();
+     
+     break;
+   
+  case 3: //Game Over
+     //displayGameOverScreen();
+     break;
+     
+  case 4: //Exit Sequences such as level complete sequences
+     //sceneScript.update();
+     break;
+   
+  case 5: //Title Screen
+     //displayTitleScreen();
+     break;
+  }
   
 }

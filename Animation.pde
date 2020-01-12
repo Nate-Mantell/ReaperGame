@@ -50,27 +50,41 @@ class Animation {
       if(set == true) {
         loadSet(imagePrefix+imageSuffix);
       } else {
-      for (int i = 0; i < imageCount; i++) { 
-         // Use nf() to number format 'i' into four digits 
-         String filename = imagePrefix + (i+1) + imageSuffix;
-         //print(filename+"\n");
-         //nf(i, 4) + ".gif"; 
-         images[i] = loadImage(filename); 
-        
-         //implement transparency, value of upper left pixel will be replaced with transparency
-         if(trans) {
-           color tc = images[i].pixels[0];
-           for(int j = 0; j < images[0].pixels.length; j++) {
-             if(tc == images[i].pixels[j]) {
-               images[i].pixels[j] = color(0,0,0,1);
+        for (int i = 0; i < imageCount; i++) { 
+           // Use nf() to number format 'i' into four digits 
+           String filename = imagePrefix + (i+1) + imageSuffix;
+           //print(filename+"\n");
+           //nf(i, 4) + ".gif"; 
+           images[i] = loadImage(filename); 
+          
+           //implement transparency, value of upper left pixel will be replaced with transparency
+           if(trans) {
+             color tc = images[i].pixels[0];
+             for(int j = 0; j < images[0].pixels.length; j++) {
+               if(tc == images[i].pixels[j]) {
+                 images[i].pixels[j] = color(0,0,0,1);
+               }
              }
            }
          }
        }
-       }
      }
      
   } 
+   
+  Animation(String imagePrefix, String imageSuffix, int count, int ifps, int iwidth, int iheight, boolean itrans, boolean set) { 
+    //print("Loading " + imagePrefix + " " + imageSuffix + " " + count + "\n");
+    fps=ifps;
+    lastTime=millis();
+    trans=itrans;
+    imageCount = count; 
+    images = new PImage[imageCount]; 
+    
+    if(set == true) {
+      loadSet(imagePrefix+imageSuffix, iwidth, iheight);
+    }
+     
+  }  
    
   void loadSet(String filename) {
      PImage masterImg = loadImage(filename);
@@ -88,6 +102,38 @@ class Animation {
            
            for(int j = 0; j < images[i].pixels.length; j++) {
              index = (i*w)+(int(j/w)*masterImg.width)+(j%w);
+             if(index >= 0 && index < masterImg.pixels.length) {
+               images[i].pixels[j] = masterImg.pixels[index];
+             }
+             if(tc == images[i].pixels[j]) {
+               images[i].pixels[j] = color(0,0,0,1);
+             }
+           }
+         }
+       }
+   }
+    
+  void loadSet(String filename, int iwidth, int iheight) {
+     PImage masterImg = loadImage(filename);
+     color tc = masterImg.pixels[0];
+     
+     int w = iwidth;
+     int h = iheight;
+     
+     int numColumns = masterImg.width/w;
+     //int numRows = divide_using_ceiling(imageCount, numColumns);
+     
+     int index;
+     
+     for (int i = 0; i < imageCount; i++) { 
+         
+         images[i] =  createImage(w,h,RGB);
+        
+         //implement transparency, value of upper left pixel will be replaced with transparency
+         if(trans) {
+           
+           for(int j = 0; j < images[i].pixels.length; j++) {
+             index = ((i/numColumns)*(h*w*numColumns))+((i%numColumns)*w)+(int(j/w)*masterImg.width)+(j%w);
              if(index >= 0 && index < masterImg.pixels.length) {
                images[i].pixels[j] = masterImg.pixels[index];
              }
@@ -124,6 +170,10 @@ class Animation {
     } else {
       frame = (frame+1) % imageCount; 
     }
+  }
+  
+  PImage currentFrame() {
+    return images[frame];
   }
   
 }

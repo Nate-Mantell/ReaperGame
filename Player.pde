@@ -19,15 +19,15 @@ class Player {
   
   boolean sidescroll;
   
-  Player(float ix, float iy, float iz, int ihp, int imhp, int imp, int immp, Weapon iweap, ArrayList<Sprite> isp, Collider ifootCollider, Scene iscene) {
+  Player(PVector ipos, int ihp, int imhp, int imp, int immp, Weapon iweap, ArrayList<Sprite> isp, Collider ifootCollider, Scene iscene) {
     scene = iscene;
     
-    position.x=ix;position.y=iy;position.z=iz;
+    position = ipos;
     vx=0;vy=0;vz=0;
     acc = 1; baseacc = 1; 
     arv = 0;
     
-    sidescroll = false;
+    sidescroll = true;
 
     dx=0;dy=1;
     
@@ -278,15 +278,9 @@ class Player {
   
   void updateSpritePos() {
     
-    if(sidescroll) {
-      curSprite.pos.x = position.x;
-      curSprite.pos.y = position.z;
-      curSprite.pos.z = position.y;
-    } else {
-      curSprite.pos.x = position.x;
-      curSprite.pos.y = position.y;
-      curSprite.pos.z = position.z;
-    }
+    curSprite.pos.x = position.x;
+    curSprite.pos.y = position.y;
+    curSprite.pos.z = position.z;
     
   }
   

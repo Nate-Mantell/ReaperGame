@@ -6,6 +6,8 @@ class Map {
   
   PVector mapPosition;
   
+  PVector playerInitialPosition;
+  
   TilePalette mapTilePalette;
   
   Map(int isizeX, int isizeY,int itileW, int itileH, TilePalette imapTilePalette) {
@@ -14,18 +16,16 @@ class Map {
     tileW = itileW; //32;
     tileH = itileH; //32;
     tiles = new int[sizeX*sizeY];
-    for(int i = 0; i < tiles.length; i++) {
-      tiles[i] = int(random(mapTilePalette.length()));
-    }
     
     mapPosition = new PVector(0,0);
+    playerInitialPosition = new PVector(0,0,0);
     
     mapTilePalette = imapTilePalette;
   }
   
   void display(PVector offset) {
     for(int i = 0; i < tiles.length; i++) {
-      image(mapTilePalette.palette[tiles[i]],
+      image(mapTilePalette.palette[tiles[i]].currentFrame(),
             ((i%sizeX)*tileW)+(mapPosition.x-offset.x),
             ((i/sizeX)*tileH)+(mapPosition.y-offset.y));
       
@@ -69,6 +69,10 @@ class Map {
     JSONObject objMaster = loadJSONObject(fname);
     JSONArray array = objMaster.getJSONArray("map");
     JSONObject objTile;
+    
+    JSONObject obj = objMaster.getJSONObject("player");
+    playerInitialPosition = new PVector(obj.getFloat("x"),obj.getFloat("y"),obj.getFloat("z"));
+      
     
     for(int i = 0; (i < array.size()) && (i < tiles.length); i++) {
       objTile = array.getJSONObject(i);

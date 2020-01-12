@@ -83,7 +83,7 @@ class MapView {
          //text(loadtext,ScrW/2-200,ScrH/2-32);
       }
       
-      changed=true;
+      mapviewDidChange();
       
     }
     
@@ -97,7 +97,15 @@ class MapView {
       if(int(millis()-lastTime) > 1000/framesPerSecond) {
         frame = (frame+1) % numFrames;
         lastTime = millis();
-        changed=true;
+        mapviewDidChange();
       }
+    }
+    
+    void mapviewDidChange() {
+      changed = true;
+    }
+    
+    void mapviewFinishedDisplayingChanges() {
+      changed = false;
     }
 }

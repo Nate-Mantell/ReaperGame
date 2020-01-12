@@ -1,3 +1,269 @@
+void keyPressed() {
+  //ActiveControls.handleKeyPressed(keyCode);
+}
+
+void keyReleased() {
+  //ActiveControls.handleKeyReleased(keyCode);
+}
+
+Controls ActiveControls;
+
+class Controls {
+  
+  int x, y, w, h;
+  color bgCol;
+  color dPColReleased, dPColPressed;
+  color acColReleased, acColPressed;
+  color weColReleased, weColPressed;
+  
+  Scene scene;
+  
+  //WeaponUpgradeDialog weaponUpgradeDialog;
+  //MenuDialog menuDialog;
+  
+  Button buttonRight;
+  Button buttonLeft;
+  Button buttonUp;
+  Button buttonDown;
+  Button buttonStop;
+  Button buttonA;
+  ButtonAHandler bah;
+  Button buttonB;
+  ButtonBHandler bbh;
+  //Button buttonMenu;
+  
+  //ArrayList<WeaponToggle> weaponToggles;
+  ToggleGroup weaponToggleGroup;
+  
+  
+  Controls(int ScrW, int ScrH, Scene iscene) {
+    x=0;
+    y=ScrH-250;
+    w=ScrW;
+    h=250;
+    
+    scene = iscene;
+    
+    
+    //Adjust the scene's viewport so that it doesn't waste time 
+    //trying to draw underneath the control panel
+    scene.viewW = ScrW;
+    scene.viewH = ScrH-h;
+    
+    
+    //weaponUpgradeDialog = new WeaponUpgradeDialog();
+    //menuDialog = new MenuDialog();
+    
+    
+    bgCol = color(164,164,164);
+    
+    dPColReleased = color(0,26,126);
+    dPColPressed = color(0,18,84);
+    
+    acColReleased = color(126,0,0);
+    acColPressed = color(64,0,0);
+    
+    weColReleased = color(164,164,164);
+    weColPressed = color(104,104,104);
+    
+    //weaponToggles = new ArrayList<WeaponToggle>();
+    weaponToggleGroup = new ToggleGroup();
+    
+    bah = new ButtonAHandler(scene);
+    bbh = new ButtonBHandler(scene);
+    
+    buttonLeft = new Button(x+50,y+100,50,50,dPColReleased,dPColPressed,37,new ButtonLeftHandler(scene), new ButtonLeftReleasedHandler(scene));
+    buttonRight = new Button(x+150,y+100,50,50,dPColReleased,dPColPressed,39,new ButtonRightHandler(scene), new ButtonRightReleasedHandler(scene));
+    buttonUp = new Button(x+100,y+50,50,50,dPColReleased,dPColPressed,38,new ButtonUpHandler(scene), new DPadReleaseHandler());
+    buttonDown = new Button(x+100,y+150,50,50,dPColReleased,dPColPressed,40,new ButtonDownHandler(scene), new DPadReleaseHandler());
+    buttonStop = new Button(x+100,y+100,50,50,dPColReleased,dPColPressed,new ButtonStopHandler(scene), new ButtonStopHandler(scene));
+    buttonA = new Button(x+w-300,y+100,50,50,acColReleased,acColPressed,32,bah, new ButtonAReleaseHandler(bah));
+    buttonB = new Button(x+w-200,y+100,50,50,acColReleased,acColPressed,bbh, new ButtonBReleaseHandler(bbh));
+    //buttonMenu = new Button(x+w-50,y+10,40,40,dPColReleased,dPColPressed,new ButtonMenuHandler(), new ButtonMenuReleaseHandler());
+    
+    
+    /*
+    //Add the weapon toggles
+    for(int i = 0; i < 1; i++) {
+      if(i == 0) {
+        weaponToggles.add(new WeaponToggle(x+w-(9*42)-40+(i*42),y+180,40,40,weColReleased,weColPressed,true,weaponToggleGroup, Weapons[i], new WeaponToggleHandler(),new WeaponToggleReleaseHandler()));
+      } else {
+        weaponToggles.add(new WeaponToggle(x+w-(9*42)-40+(i*42),y+180,40,40,weColReleased,weColPressed,false,weaponToggleGroup, Weapons[i], new WeaponToggleHandler(),new WeaponToggleReleaseHandler()));
+      }
+      weaponToggleGroup.add(weaponToggles.get(i));
+    }
+    */
+   
+    ActiveControls = this;
+  }
+  
+  void display() {
+    //draw the background
+    fill(bgCol);
+    stroke(bgCol);
+    rect(x,y,w,h);
+    
+    
+    //draw the butttons
+    buttonUp.display();
+    buttonLeft.display();
+    buttonRight.display();
+    buttonDown.display();
+    buttonStop.display();
+    buttonA.display();
+    buttonB.display();
+    //buttonMenu.display();
+    
+    /*
+    for(int i = 0; i < weaponToggles.size(); i++) {
+        weaponToggles.get(i).display();
+    }
+    */
+    
+    /*
+    //draw the hud
+    textSize(32);
+    fill(255-((float(player1.hp)/float(player1.mhp))*255),((float(player1.hp)/float(player1.mhp))*255),0);
+    text("HP: " + player1.hp + "/" + player1.mhp,controls.x+controls.w-550,controls.y+64);
+    if(player1.ap > 0) {
+      fill(144,25,0);
+      text("ARMOUR: " + player1.ap + "/" + player1.mxap,controls.x+controls.w-400,controls.y+64);
+    }
+    fill(0,0,((float(player1.mp)/float(player1.mmp))*255));
+    text("MP: " + player1.mp + "/" + player1.mmp,controls.x+controls.w-550,controls.y+106);
+    fill(0,0,0);
+    text(player1.weapon.name,controls.x+controls.w-550,controls.y+148);
+    fill(255,0,0);
+    text(player1.weapon.damage,controls.x+controls.w-550,controls.y+190);
+    fill(0,0,165);
+    text(player1.weapon.mp,controls.x+controls.w-500,controls.y+190);
+    image(itemImg[1].images[0],controls.x+controls.w-560,controls.y+204,34,34);
+    fill(0,0,0);
+    text(player1.currency,controls.x+controls.w-500,controls.y+234);
+    
+    
+    //Display the Weapon Upgrade Dialog if it is active
+    weaponUpgradeDialog.display();
+    menuDialog.display();
+    */
+  }
+  
+  void check() {
+    
+    /*
+    //If the Weapon Upgrade Dialog is active, dont check the buttons on the main controls
+    if(weaponUpgradeDialog.visible) {
+      weaponUpgradeDialog.check();
+      return;
+    }
+    
+    if(menuDialog.visible) {
+      menuDialog.check();
+      return;
+    }
+    */
+    
+    
+    buttonUp.check(keyCode);
+    buttonLeft.check(keyCode);
+    buttonRight.check(keyCode);
+    buttonDown.check(keyCode);
+    buttonStop.check();
+    buttonA.check(keyCode);
+    buttonB.check();
+    //buttonMenu.check();
+    
+    /*
+    for(int i = 0; i < weaponToggles.size(); i++) {
+        weaponToggles.get(i).check();
+    }
+    */
+  }
+  
+  void handleKeyPressed(int kcode) {
+    switch(kcode) {
+      case 37: //left
+        buttonLeft.press();
+      case 39: //right
+        buttonRight.press();
+      case 38: //up
+        buttonUp.press();
+      case 40: //down
+        buttonDown.press();
+      case 32: //space
+    }
+  }
+  
+  void release() {
+    buttonUp.release();
+    buttonLeft.release();
+    buttonRight.release();
+    buttonDown.release();
+    buttonStop.release();
+    buttonA.release();
+    buttonB.release();
+    //buttonMenu.release();
+  }
+  
+  void handleKeyReleased(int kcode) {
+    switch(kcode) {
+      case 37: //left
+        buttonLeft.release();
+      case 39: //right
+        buttonRight.release();
+      case 38: //up
+        buttonUp.release();
+      case 40: //down
+        buttonDown.release();
+      case 32: //space
+    }
+  }
+  
+  void loadSoundEffects() {
+    //for(int i = 0; i < weaponToggles.size(); i++) {
+        //weaponToggles.get(i).loadSoundEffect(soundEffects.menuEffects.get(0));
+    //}
+    //weaponUpgradeDialog.loadSoundEffects();
+  }
+  
+  /*
+  boolean doWeaponUpgrade(GameObject item) {
+    
+    if(weaponUpgradeDialog.success == false) {
+      weaponUpgradeDialog.show(item);
+    }
+    
+    //while(mousePressed);
+    
+    
+    //while(weaponUpgradeDialog.visible) {
+    //  weaponUpgradeDialog.check();
+    //  weaponUpgradeDialog.display();
+    //}
+    if(weaponUpgradeDialog.success) {
+      item.consumable = true;
+      return true;
+    } else {
+      item.unconsumable(2000);
+      return false;
+    }
+    
+  }
+  */
+  
+  void addWeapon(int weaponType) {
+    //weaponToggles.add(new WeaponToggle(x+w-(9*42)-40+(weaponToggles.size()*42),y+180,40,40,weColReleased,weColPressed,false,weaponToggleGroup, Weapons[weaponType-1], new WeaponToggleHandler(),new WeaponToggleReleaseHandler()));
+    //weaponToggles.get(weaponToggles.size()-1).loadSoundEffect(soundEffects.menuEffects.get(0));
+    //weaponToggleGroup.add(weaponToggles.get(weaponToggles.size()-1));
+  }
+  
+  
+  
+}
+
+
+
+
 interface CallBack {
    
    void function();
@@ -11,7 +277,7 @@ class ButtonUpHandler implements CallBack {
     }
     
     void function() {
-      scene.scrollUp();
+      scene.buttonPressedUp();
     }
 }
 
@@ -23,7 +289,7 @@ class ButtonDownHandler implements CallBack {
   }
   
   void function() {
-    scene.scrollDown();
+    scene.buttonPressedDown();
   }
 }
 
@@ -35,7 +301,7 @@ class ButtonRightHandler implements CallBack {
     }
     
     void function() {
-      scene.scrollRight();
+      scene.buttonPressedRight();
     }
 }
 
@@ -47,7 +313,55 @@ class ButtonLeftHandler implements CallBack {
     }
     
     void function() {
-      scene.scrollLeft();
+      scene.buttonPressedLeft();
+    }
+}
+
+class ButtonUpReleasedHandler implements CallBack {
+    Scene scene;
+    
+    ButtonUpReleasedHandler(Scene iscene) {
+      scene = iscene;
+    }
+    
+    void function() {
+      scene.buttonReleasedUp();
+    }
+}
+
+class ButtonDownReleasedHandler implements CallBack {
+  Scene scene;
+  
+  ButtonDownReleasedHandler(Scene iscene) {
+      scene = iscene;
+  }
+  
+  void function() {
+    scene.buttonReleasedDown();
+  }
+}
+
+class ButtonRightReleasedHandler implements CallBack {
+    Scene scene;
+  
+    ButtonRightReleasedHandler(Scene iscene) {
+      scene = iscene;
+    }
+    
+    void function() {
+      scene.buttonReleasedRight();
+    }
+}
+
+class ButtonLeftReleasedHandler implements CallBack {
+    Scene scene;
+  
+    ButtonLeftReleasedHandler(Scene iscene) {
+      scene = iscene;
+    }
+    
+    void function() {
+      scene.buttonReleasedLeft();
     }
 }
 
@@ -59,7 +373,7 @@ class ButtonStopHandler implements CallBack {
     }
     
     void function() {
-      scene.stopScrolling();
+      scene.buttonPressedStop();
     }
 }
 
@@ -468,224 +782,7 @@ void mouseReleased() {
 
 */
 
-class Controls {
-  int x, y, w, h;
-  color bgCol;
-  color dPColReleased, dPColPressed;
-  color acColReleased, acColPressed;
-  color weColReleased, weColPressed;
-  
-  Scene scene;
-  
-  //WeaponUpgradeDialog weaponUpgradeDialog;
-  //MenuDialog menuDialog;
-  
-  Button buttonRight;
-  Button buttonLeft;
-  Button buttonUp;
-  Button buttonDown;
-  Button buttonStop;
-  Button buttonA;
-  ButtonAHandler bah;
-  Button buttonB;
-  ButtonBHandler bbh;
-  Button buttonMenu;
-  
-  ArrayList<WeaponToggle> weaponToggles;
-  ToggleGroup weaponToggleGroup;
-  
-  
-  Controls(int ScrH, int ScrW, Scene iscene) {
-    x=0;
-    y=ScrH-250;
-    w=ScrW;
-    h=250;
-    
-    scene = iscene;
-    
-    
-    //Adjust the scene's viewport so that it doesn't waste time 
-    //trying to draw underneath the control panel
-    scene.viewW = ScrW;
-    scene.viewH = ScrH-h;
-    
-    
-    //weaponUpgradeDialog = new WeaponUpgradeDialog();
-    //menuDialog = new MenuDialog();
-    
-    
-    bgCol = color(164,164,164);
-    
-    dPColReleased = color(0,26,126);
-    dPColPressed = color(0,18,84);
-    
-    acColReleased = color(126,0,0);
-    acColPressed = color(64,0,0);
-    
-    weColReleased = color(164,164,164);
-    weColPressed = color(104,104,104);
-    
-    weaponToggles = new ArrayList<WeaponToggle>();
-    weaponToggleGroup = new ToggleGroup();
-    
-    bah = new ButtonAHandler(scene);
-    bbh = new ButtonBHandler(scene);
-    
-    buttonLeft = new Button(x+50,y+100,50,50,dPColReleased,dPColPressed,new ButtonLeftHandler(scene), new DPadReleaseHandler());
-    buttonRight = new Button(x+150,y+100,50,50,dPColReleased,dPColPressed,new ButtonRightHandler(scene), new DPadReleaseHandler());
-    buttonUp = new Button(x+100,y+50,50,50,dPColReleased,dPColPressed,new ButtonUpHandler(scene), new DPadReleaseHandler());
-    buttonDown = new Button(x+100,y+150,50,50,dPColReleased,dPColPressed,new ButtonDownHandler(scene), new DPadReleaseHandler());
-    buttonStop = new Button(x+100,y+100,50,50,dPColReleased,dPColPressed,new ButtonStopHandler(scene), new ButtonStopHandler(scene));
-    buttonA = new Button(x+w-300,y+100,50,50,acColReleased,acColPressed,bah, new ButtonAReleaseHandler(bah));
-    buttonB = new Button(x+w-200,y+100,50,50,acColReleased,acColPressed,bbh, new ButtonBReleaseHandler(bbh));
-    //buttonMenu = new Button(x+w-50,y+10,40,40,dPColReleased,dPColPressed,new ButtonMenuHandler(), new ButtonMenuReleaseHandler());
-    
-    
-    /*
-    //Add the weapon toggles
-    for(int i = 0; i < 1; i++) {
-      if(i == 0) {
-        weaponToggles.add(new WeaponToggle(x+w-(9*42)-40+(i*42),y+180,40,40,weColReleased,weColPressed,true,weaponToggleGroup, Weapons[i], new WeaponToggleHandler(),new WeaponToggleReleaseHandler()));
-      } else {
-        weaponToggles.add(new WeaponToggle(x+w-(9*42)-40+(i*42),y+180,40,40,weColReleased,weColPressed,false,weaponToggleGroup, Weapons[i], new WeaponToggleHandler(),new WeaponToggleReleaseHandler()));
-      }
-      weaponToggleGroup.add(weaponToggles.get(i));
-    }
-    */
-    
-  }
-  
-  void display() {
-    //draw the background
-    fill(bgCol);
-    stroke(bgCol);
-    rect(x,y,w,h);
-    
-    
-    //draw the butttons
-    buttonUp.display();
-    buttonLeft.display();
-    buttonRight.display();
-    buttonDown.display();
-    buttonStop.display();
-    buttonA.display();
-    buttonB.display();
-    buttonMenu.display();
-    
-    for(int i = 0; i < weaponToggles.size(); i++) {
-        weaponToggles.get(i).display();
-    }
-    
-    /*
-    //draw the hud
-    textSize(32);
-    fill(255-((float(player1.hp)/float(player1.mhp))*255),((float(player1.hp)/float(player1.mhp))*255),0);
-    text("HP: " + player1.hp + "/" + player1.mhp,controls.x+controls.w-550,controls.y+64);
-    if(player1.ap > 0) {
-      fill(144,25,0);
-      text("ARMOUR: " + player1.ap + "/" + player1.mxap,controls.x+controls.w-400,controls.y+64);
-    }
-    fill(0,0,((float(player1.mp)/float(player1.mmp))*255));
-    text("MP: " + player1.mp + "/" + player1.mmp,controls.x+controls.w-550,controls.y+106);
-    fill(0,0,0);
-    text(player1.weapon.name,controls.x+controls.w-550,controls.y+148);
-    fill(255,0,0);
-    text(player1.weapon.damage,controls.x+controls.w-550,controls.y+190);
-    fill(0,0,165);
-    text(player1.weapon.mp,controls.x+controls.w-500,controls.y+190);
-    image(itemImg[1].images[0],controls.x+controls.w-560,controls.y+204,34,34);
-    fill(0,0,0);
-    text(player1.currency,controls.x+controls.w-500,controls.y+234);
-    
-    
-    //Display the Weapon Upgrade Dialog if it is active
-    weaponUpgradeDialog.display();
-    menuDialog.display();
-    */
-  }
-  
-  void check() {
-    
-    /*
-    //If the Weapon Upgrade Dialog is active, dont check the buttons on the main controls
-    if(weaponUpgradeDialog.visible) {
-      weaponUpgradeDialog.check();
-      return;
-    }
-    
-    if(menuDialog.visible) {
-      menuDialog.check();
-      return;
-    }
-    */
-    
-    
-    buttonUp.check();
-    buttonLeft.check();
-    buttonRight.check();
-    buttonDown.check();
-    buttonStop.check();
-    buttonA.check();
-    buttonB.check();
-    buttonMenu.check();
-    
-    for(int i = 0; i < weaponToggles.size(); i++) {
-        weaponToggles.get(i).check();
-    }
-  }
-  
-  void release() {
-    buttonUp.release();
-    buttonLeft.release();
-    buttonRight.release();
-    buttonDown.release();
-    buttonStop.release();
-    buttonA.release();
-    buttonB.release();
-    buttonMenu.release();
-  }
-  
-  void loadSoundEffects() {
-    //for(int i = 0; i < weaponToggles.size(); i++) {
-        //weaponToggles.get(i).loadSoundEffect(soundEffects.menuEffects.get(0));
-    //}
-    //weaponUpgradeDialog.loadSoundEffects();
-  }
-  
-  /*
-  boolean doWeaponUpgrade(GameObject item) {
-    
-    if(weaponUpgradeDialog.success == false) {
-      weaponUpgradeDialog.show(item);
-    }
-    
-    //while(mousePressed);
-    
-    
-    //while(weaponUpgradeDialog.visible) {
-    //  weaponUpgradeDialog.check();
-    //  weaponUpgradeDialog.display();
-    //}
-    if(weaponUpgradeDialog.success) {
-      item.consumable = true;
-      return true;
-    } else {
-      item.unconsumable(2000);
-      return false;
-    }
-    
-  }
-  */
-  
-  void addWeapon(int weaponType) {
-    //weaponToggles.add(new WeaponToggle(x+w-(9*42)-40+(weaponToggles.size()*42),y+180,40,40,weColReleased,weColPressed,false,weaponToggleGroup, Weapons[weaponType-1], new WeaponToggleHandler(),new WeaponToggleReleaseHandler()));
-    //weaponToggles.get(weaponToggles.size()-1).loadSoundEffect(soundEffects.menuEffects.get(0));
-    //weaponToggleGroup.add(weaponToggles.get(weaponToggles.size()-1));
-  }
-  
-  
-  
-}
+
 
 /*
 class WeaponUpgradeDialog {
@@ -1012,7 +1109,7 @@ class WeaponUpgradeToggle extends GroupToggle {
   
 }
 */
-
+/*
 class WeaponToggle extends GroupToggle {
   Weapon weapon;
   //boolean active;
@@ -1057,6 +1154,7 @@ class WeaponToggle extends GroupToggle {
   //}
   
 }
+*/
 
 class ToggleGroup {
   ArrayList<GroupToggle> toggles;
@@ -1200,6 +1298,8 @@ class Button {
   int x,y,w,h;
   int c,pc;
   boolean pressed;
+  
+  int kcode;
   //SoundFile soundEffect;
   
   CallBack onPressed;
@@ -1210,6 +1310,17 @@ class Button {
     pressed = false;
     onPressed = iOnPressed;
     onReleased = iOnReleased;
+    
+    kcode = 0;
+  }
+  
+  Button(int ix,int iy,int iw,int ih,int ic, int ipc, int ikcode, CallBack iOnPressed, CallBack iOnReleased) {
+    x=ix; y=iy; w=iw; h=ih; c=ic; pc=ipc;
+    pressed = false;
+    onPressed = iOnPressed;
+    onReleased = iOnReleased;
+    
+    kcode = ikcode;
   }
   
   void display() {
@@ -1224,6 +1335,14 @@ class Button {
   
   void check() {
     if(mouseX > x && mouseX < x+w && mouseY > y && mouseY < y+h && mousePressed) {
+      this.press();
+    } else {
+      this.release();
+    }
+  }
+  
+  void check(int code) {
+    if((mouseX > x && mouseX < x+w && mouseY > y && mouseY < y+h && mousePressed) || (keyPressed && code == kcode)) {
       this.press();
     } else {
       this.release();
