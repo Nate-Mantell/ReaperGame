@@ -13,13 +13,12 @@ class Player {
   Weapon weapon;
   
   int state,returnState,stateTimer;
-  PVector position;
-  float vx,vy,vz, acc,baseacc, arv;
   
-  PVector baseFriction, friction;
+  PhysicalObject physobject;
   
-  ArrayList<PVector> forces;
+  float acc,baseacc, arv;
   
+  PVector baseFriction;
   
   int dx,dy;
   
@@ -29,16 +28,13 @@ class Player {
   Player(PVector ipos, int ihp, int imhp, int imp, int immp, Weapon iweap, ArrayList<Sprite> isp, Collider ifootCollider, Scene iscene) {
     scene = iscene;
     
-    position = ipos;
-    vx=0;vy=0;vz=0;
+    physobject = new PhysicalObject(ipos);
+    
     acc = 1; baseacc = 1; 
     arv = 0;
     
     baseFriction = new PVector(0.8,0.96,0.8);
-    friction = new PVector();
-    friction.set(baseFriction);
     
-    forces = new ArrayList<PVector>();
     
     sidescroll = true;
 
@@ -61,24 +57,29 @@ class Player {
     
     
     
-    curCollider = new Collider(position.x,position.y,position.x+curSprite.w,position.y+curSprite.h,position.z);
+    curCollider = new Collider(physobject.position.x,physobject.position.y,
+                               physobject.position.x+curSprite.w,physobject.position.y+curSprite.h,physobject.position.z);
     
     
     //foot collider w=32,h=10
     footH = 10;
     
     footCollider = ifootCollider;
-    footCollider.setcx1(position.x);
-    footCollider.setcy1(position.y+curSprite.h-footH);
-    footCollider.setcx2(position.x+curSprite.w);
-    footCollider.setcy2(position.y+curSprite.h);
+    footCollider.setcx1(physobject.position.x);
+    footCollider.setcy1(physobject.position.y+curSprite.h-footH);
+    footCollider.setcx2(physobject.position.x+curSprite.w);
+    footCollider.setcy2(physobject.position.y+curSprite.h);
     footCollider.setz(0);
+  }
+  
+  PVector position() {
+    return physobject.position;
   }
   
   void walkRight() {
     if(state == 2) return;
     //vx = acc+arv;
-    addForce(new PVector((acc+arv),0,0));
+    addForce(new Force(new PVector((acc+arv),0,0),baseFriction));
     //vy = 0;
     dx = 1;
     dy = 0;
@@ -89,7 +90,7 @@ class Player {
   void runRight() {
     if(state == 2) return;
     //vx = acc*2+arv;
-    addForce(new PVector((acc*2+arv),0,0));
+    addForce(new Force(new PVector((acc*2+arv),0,0),baseFriction));
     //vy = 0;
     dx = 1;
     dy = 0;
@@ -100,7 +101,7 @@ class Player {
   void walkLeft() {
     if(state == 2) return;
     //vx = -(acc+arv);
-    addForce(new PVector(-(acc+arv),0,0));
+    addForce(new Force(new PVector(-(acc+arv),0,0),baseFriction));
     //vy = 0;
     dx = -1;
     dy = 0;
@@ -111,7 +112,7 @@ class Player {
   void runLeft() {
     if(state == 2) return;
     //vx = -(acc*2+arv);
-    addForce(new PVector(-(acc*2+arv),0,0));
+    addForce(new Force(new PVector(-(acc*2+arv),0,0),baseFriction));
     //vy = 0;
     dx = -1;
     dy = 0;
@@ -120,40 +121,48 @@ class Player {
   }
   
   void walkUp() {
+    /*
     if(state == 2) return;
-    vx = 0;
-    vy = -(acc+arv);
+    physobject.velocity.x = 0;
+    physobject.velocity.y = -(acc+arv);
     dx = 0;
     dy = -1;
+    */
   }
   
   void runUp() {
+    /*
     if(state == 2) return;
-    vx = 0;
-    vy = -(acc*2+arv);
+    physobject.velocity.x = 0;
+    physobject.velocity.y = -(acc*2+arv);
     dx = 0;
     dy = -1;
+    */
   }
   
   void walkDown() {
+    /*
     if(state == 2) return;
-    vx = 0;
-    vy = acc+arv;
+    physobject.velocity.x = 0;
+    physobject.velocity.y = acc+arv;
     dx = 0;
     dy = 1;
+    */
   }
   
   void runDown() {
+    /*
     if(state == 2) return;
-    vx = 0;
-    vy = acc*2+arv;
+    physobject.velocity.x = 0;
+    physobject.velocity.y = acc*2+arv;
     dx = 0;
     dy = 1;
+    */
   }
   
   void stop() {
-    vx = 0;
-    vy = 0;
+    physobject.velocity.x = 0;
+    physobject.velocity.y = 0;
   }
   
   void jump() {
@@ -161,13 +170,12 @@ class Player {
     //soundEffects.playerEffects.get(1).play();
     
     if(sidescroll) {
-      if(vy >= -0.5 && vy <= 0.5) {
+      if(physobject.velocity.y >= -0.5 && physobject.velocity.y <= 0.5) {
         //vy = -acc*5;
-        addForce(new PVector(0, -acc*5, 0));
-        friction.set(baseFriction);
+        addForce(new Force(new PVector(0, -acc*5, 0),baseFriction));
       }
     } else {
-      if(position.z == 0) vz = acc*5;
+      if(physobject.position.z == 0) physobject.velocity.z = acc*5;
     }
   }
   
@@ -183,8 +191,10 @@ class Player {
        //type 6 = a top within b
        //type 7 = a right within b
        //type 8 = a left within b
+    /*
     c.determineDirection();
     switch(c.type) {
+
       case C_UNKNOWN:
         //vx = -vx*3;
         //vy = -vy*3;
@@ -221,7 +231,9 @@ class Player {
         vx = dv;
         //vy = -dv;
         break;
+        
     }
+    */
     
     absolveState();
     returnState = state;
@@ -259,7 +271,7 @@ class Player {
        return;
     }
     mp-=weapon.mp;
-    scene.spawnPlayerBullet(position,weapon);
+    scene.spawnPlayerBullet(physobject.position,weapon);
   }
   
   void step() {
@@ -270,7 +282,7 @@ class Player {
     resolveForces();
     
     //update position with velocity
-    position.x+=vx; position.y+=vy; position.z+=vz;
+    physobject.applyVelocityToPosition();
     
     
     //gravity for jumping, ground collision, and friction
@@ -281,20 +293,17 @@ class Player {
       //  vy = 0;
       //}
       
-      addForce(new PVector(0,0.5,0));
+      addForce(new Force(new PVector(0,0.5,0),baseFriction));
       
       
     } else {
-      if(position.z > 0) {
-        vz-=0.5;
+      if(physobject.position.z > 0) {
+        physobject.velocity.z-=0.5;
       } else {
-        position.z = 0;
-        vz = 0;
+        physobject.position.z = 0;
+        physobject.velocity.z = 0;
       }
     }
-    
-    //reset the friction after any ground and object frictions may have been applied
-    friction.set(baseFriction);
     
     
     //update the Sprites' positions now that the physical attributes have been updated
@@ -304,41 +313,20 @@ class Player {
     
   }
   
-  void addForce(PVector f) {
-    forces.add(f);
+  void addForce(Force f) {
+    physobject.addForce(f);
   }
   
+  
   void resolveForces() {
-    String fstr = "";
-    PVector sumForces = new PVector();
-    for(PVector force: forces) {
-      sumForces.add(force);
-      fstr+="("+int(force.x*1000)+","+int(force.y*1000)+"), ";
-    }
-    
-    fstr+="\nSUM F=("+int(sumForces.x*1000)+","+int(sumForces.y*1000)+
-         "), FRI=("+int(friction.x*1000)+","+int(friction.y*1000)+
-         "), PV=("+int(vx*1000)+","+int(vy*1000)+")";
-    scene.addMessage(fstr);
-    
-    vx += sumForces.x;
-    vy += sumForces.y;
-    
-    vx *= friction.x;
-    vy *= friction.y;
-    
-    forces.clear();
+    physobject.resolveForces();
   }
   
   PVector projectedVelocity() {
-    PVector sumForces = new PVector();
-    for(PVector force: forces) {
-      sumForces.add(force);
-    }
-    sumForces.add(vx,vy,vz);
-    return sumForces;
+    return physobject.projectedVelocity();
   }
   
+  /*
   void bounce(ArrayList<Collision> collisions, float bfriction) {
     switch(collisions.get(0).determineDirection()) {
       case C_BOTTOM:
@@ -368,7 +356,7 @@ class Player {
     }
     
     updateColliderPos();
-  }
+  }*/
   
   /*
   void bounce(ArrayList<Collision> collisions, float bfrictionx, float bfrictiony) {
@@ -463,6 +451,7 @@ class Player {
   }
   */
   
+  /*
   void bounce(ArrayList<Collision> collisions, float bfrictionx, float bfrictiony) {
     PVector pv = projectedVelocity();
     
@@ -512,6 +501,8 @@ class Player {
     
     //updateColliderPos();
   }
+  */
+  
   
   void bounceLine(ArrayList<LineCollision> collisions, float bfrictionx, float bfrictiony) {
     PVector pv = projectedVelocity();
@@ -536,23 +527,42 @@ class Player {
     //addForce(new PVector(abs(pv.x*ln.x),abs(pv.y*ln.y),0));
     
     if(c.b.isHorizontal(50)) {
-      PVector f = new PVector(0,-pv.y/*+(c.a.cy2-c.b.getYatX((c.a.cx2-c.a.cx1)/2))*/,0);
-      addForce(f);
-      /*print("PV=("+(pv.x)+","+(pv.y)+")"+
-            " CY2="+(c.a.cy2)+
-            " CX="+((c.a.cx2-c.a.cx1)/2)+
-            " LineYatX="+(c.b.getYatX((c.a.cx2-c.a.cx1)/2))+
-            " CF="+(c.a.cy2-c.b.getYatX((c.a.cx2-c.a.cx1)/2)));
-      */
-      //print("Added bounce force: " + f);
+      if(pv.y > 0) {
+        Force f = new Force(new PVector(0,-pv.y-(c.a.cy2-c.b.getYatX((c.a.cx2-c.a.cx1)/2)),0));
+        //if(abs(f.acceleration.x) < abs(pv.x)-0.1 || abs(f.acceleration.x) > abs(pv.x)+0.1 ) {
+        //    print("BounceY B PV=("+pv.x+","+pv.y+"), CAY1:"+c.a.cy1+
+        //          " CAY2:"+c.a.cy2+" CBAY:"+c.b.getYatX((c.a.cx2-c.a.cx1)/2)+
+        //          ", OFFSY:"+(c.a.cy2-c.b.getYatX((c.a.cx2-c.a.cx1)/2))+"\n");
+        //}
+        addForce(f);
+        /*print("PV=("+(pv.x)+","+(pv.y)+")"+
+              " CY2="+(c.a.cy2)+
+              " CX="+((c.a.cx2-c.a.cx1)/2)+
+              " LineYatX="+(c.b.getYatX((c.a.cx2-c.a.cx1)/2))+
+              " CF="+(c.a.cy2-c.b.getYatX((c.a.cx2-c.a.cx1)/2)));
+        */
+        //print("Added bounce force: " + f);
+      }
     } else if(c.b.isVertical(50)) {
-      PVector f = new PVector(-pv.x,0,0);
-      addForce(f);
+      if(pv.x < 0) {
+        Force f = new Force(new PVector(-(pv.x+(c.a.cx1-c.b.a.x)),0,0),true);
+        if(abs(f.acceleration.x) > abs(pv.x)) {
+          print("BounceX L PV=("+pv.x+","+pv.y+"), CAX1:"+c.a.cx1+" CAX2:"+c.a.cx2+" CBAX:"+c.b.a.x+", OFFSX:"+(c.a.cx1-c.b.a.x)+"\n");
+        }
+        addForce(f);
+      } else {
+        Force f = new Force(new PVector(-(pv.x-(c.a.cx2-c.b.a.x)),0,0),true);
+        if(abs(f.acceleration.x) > abs(pv.x)) {
+          print("BounceX R PV=("+pv.x+","+pv.y+"), CAX1:"+c.a.cx1+" CAX2:"+c.a.cx2+" CBAX:"+c.b.a.x+", OFFSX:"+(c.a.cx2-c.b.a.x)+"\n");
+        }
+        addForce(f);
+      }
     }
     
     //updateColliderPos();
   }
   
+  /*
    void bounce(ArrayList<Collision> collisions) {
     switch(collisions.get(0).determineDirection()) {
       case C_BOTTOM:
@@ -579,11 +589,12 @@ class Player {
         break;
     }
   }
+  */
   
   void addPos(float xAdd, float yAdd, float zAdd) {
-    position.x+=xAdd;
-    position.y+=yAdd;
-    position.z+=zAdd;
+    physobject.position.x+=xAdd;
+    physobject.position.y+=yAdd;
+    physobject.position.z+=zAdd;
     updateSpritePos();
   }
   
@@ -606,33 +617,35 @@ class Player {
   
   void updateSpritePos() {
     
-    curSprite.pos.x = position.x;
-    curSprite.pos.y = position.y;
-    curSprite.pos.z = position.z;
+    curSprite.pos.x = physobject.position.x;
+    curSprite.pos.y = physobject.position.y;
+    curSprite.pos.z = physobject.position.z;
     
   }
   
   void updateSpritePos(PVector offset) {
     
-    curSprite.pos.x = position.x-offset.x;
-    curSprite.pos.y = position.y-offset.y;
-    curSprite.pos.z = position.z;
+    curSprite.pos.x = physobject.position.x-offset.x;
+    curSprite.pos.y = physobject.position.y-offset.y;
+    curSprite.pos.z = physobject.position.z;
     
   }
   
   void updateColliderPos() {
-    curCollider.updatePosition(position.x,position.y,position.x+curSprite.w,position.y+curSprite.h,position.z);
-    footCollider.updatePosition(position.x,position.y+curSprite.h-footH,position.x+curSprite.w,position.y+curSprite.h,position.z);
+    curCollider.updatePosition(physobject.position.x,physobject.position.y,
+                               physobject.position.x+curSprite.w,physobject.position.y+curSprite.h,physobject.position.z);
+    footCollider.updatePosition(physobject.position.x,physobject.position.y+curSprite.h-footH,
+                                physobject.position.x+curSprite.w,physobject.position.y+curSprite.h,physobject.position.z);
   }
   
   
   void move(PVector newPosition) {
-    position.set(newPosition);
+    physobject.position.set(newPosition);
     updateSpritePos();
   }
   
   void move(float mx, float my, float mz) {
-    position.x = mx; position.y = my; position.z = mz;
+    physobject.position.x = mx; physobject.position.y = my; physobject.position.z = mz;
     updateSpritePos();
   }
   
@@ -700,6 +713,7 @@ class Player {
     }
   }
   
+  /*
   void changeSpeed(float newacc, int time) {
     absolveState();
     
@@ -711,6 +725,7 @@ class Player {
     vx*= newacc;
     vy*= newacc;
   }
+  */
   
   void absolveState() {
     stateTimer=0;
@@ -721,6 +736,7 @@ class Player {
     switch(state) {
       //damage
       case 2:
+        /*
         vx*=0.8;
         //vy*=0.8;
         stateTimer--;
@@ -729,6 +745,7 @@ class Player {
           //vy=0;
           state = returnState;
         }
+        */
       break;
       //speed boosted
       case 3:

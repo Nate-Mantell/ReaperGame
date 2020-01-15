@@ -218,8 +218,8 @@ class Scene {
   }
   
   void centerOnPlayer(Player p) {
-    position.x = p.position.x - width/2;
-    position.y = p.position.y - height/2;
+    position.x = p.position().x - width/2;
+    position.y = p.position().y - height/2;
   }
   
   void constrainToMapBoundaries(Map m) {

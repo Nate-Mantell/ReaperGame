@@ -178,6 +178,40 @@ class Collider {
      return lCol; 
   }
   
+  ArrayList<LineCollision> collidePoints(CollisionLine line) {
+     lCol.clear();
+     
+     float xa1,xa2,ya1,ya2,xb1,xb2,yb1,yb2;
+     
+     xa1 = cx1;
+     xa2 = cx2;
+     ya1 = cy1;
+     ya2 = cy2;
+     
+     xb1 = line.a.x;
+     xb2 = line.b.x;
+     yb1 = line.a.y;
+     yb2 = line.b.y;
+     
+     
+     PVector left =   lineLinePoint(xb1,yb1,xb2,yb2, xa1,ya1,xa1,ya2);
+     PVector right =  lineLinePoint(xb1,yb1,xb2,yb2, xa2,ya1,xa2,ya2);
+     PVector top =    lineLinePoint(xb1,yb1,xb2,yb2, xa1,ya1,xa2,ya1);
+     PVector bottom = lineLinePoint(xb1,yb1,xb2,yb2, xa1,ya2,xa2,ya2);
+    
+     if (left != null || right != null || top != null || bottom != null) {
+       PVector v1, v2;
+       if(left.x ==  top.x) {
+         
+       } else {
+         
+       }
+       lCol.add(new LineCollision(this, line, CollisionType.C_UNKNOWN)); 
+     }
+     
+     return lCol; 
+  }
+  
   boolean lineLine(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
 
     // calculate the direction of the lines
@@ -199,6 +233,21 @@ class Collider {
       return true;
     }
     return false;
+  }
+  
+  PVector lineLinePoint(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
+
+    // calculate the direction of the lines
+    float uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
+    float uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
+
+    // if uA and uB are between 0-1, lines are colliding
+    if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+      
+
+      return new PVector(x1 + (uA * (x2-x1)), y1 + (uA * (y2-y1)));
+    }
+    return null;
   }
 }
 
@@ -506,27 +555,32 @@ enum CollisionLineDirection {
 }
 
 
+
 class CollisionLine {
   
   PVector a, b;
   CollisionLineDirection direction;
-  float slopeY, slopeX;
+  float slopeY, slopeX, offsX, offsY;
   
   CollisionLine(PVector ia, PVector ib) {
     a=ia;
     b=ib;
     direction = CollisionLineDirection.UNKNOWN;
+    calculateSlope();
   }
   
   CollisionLine(PVector ia, PVector ib, CollisionLineDirection d) {
     a=ia;
     b=ib;
     direction = d;
+    calculateSlope();
   }
   
   void calculateSlope() {
     slopeY = getSlopeY();
+    offsY = a.y-(a.x*slopeY);
     slopeX = getSlopeX();
+    offsX = a.x-(a.y*slopeX);
   }
   
   PVector getNormalVector(CollisionLineDirection d) {
@@ -536,6 +590,16 @@ class CollisionLine {
         return new PVector(-(a.x-b.x),(a.y-b.y),0).normalize();
       case DOWN:
         return new PVector((a.x-b.x),-(a.y-b.y),0).normalize();
+    }
+  }
+  
+  PVector getPerpendicularVector(CollisionLineDirection d) {
+    switch(d) {
+      default:
+      case UP:
+        return new PVector(-(a.y-b.y),(a.x-b.x),0).normalize();
+      case DOWN:
+        return new PVector((a.y-b.y),-(a.x-b.x),0).normalize();
     }
   }
   
@@ -549,18 +613,26 @@ class CollisionLine {
   }
   
   float getYatX(float x) {
-    return x*slopeY;
+    return (x*slopeY)+offsY;
   }
   
   float getXatY(float y) {
-    return y*slopeX;
+    return (y*slopeX)+offsX;
   }
   
-  float getSlopeY() {
-    return (b.x-a.x)/(b.y-a.y);
+  float getPYatX(float x) {
+    return (x*(1/slopeY))-offsX;
+  }
+  
+  float getPXatY(float y) {
+    return (y*slopeX)+offsX;
   }
   
   float getSlopeX() {
+    return (b.x-a.x)/(b.y-a.y);
+  }
+  
+  float getSlopeY() {
     return (b.y-a.y)/(b.x-a.x);
   }
   
