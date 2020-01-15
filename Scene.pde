@@ -35,7 +35,11 @@ class Scene {
   
   PlayMode mode; 
   
+  CollisionLines collisionLines;
+  
   ArrayList<Collision> collisions; 
+  ArrayList<LineCollision> lineCollisions; 
+  
   
   PlayerAction playerActions;
   
@@ -45,6 +49,8 @@ class Scene {
     playerAnimations = iplayerAnimations;
     
     gameObjectFactory = igameObjectFactory;
+    
+    collisionLines = new CollisionLines();
     
     map = imap;
     viewW = scrW;
@@ -91,6 +97,16 @@ class Scene {
         player1.step();
       
       
+        for(CollisionLine line: collisionLines.lines) {
+          lineCollisions = player1.footCollider.collide(line);
+          
+          if(lineCollisions.size() > 0) {
+            player1.bounceLine(lineCollisions,1,0.001);
+            
+            controls.addMessage("Line Collision");
+          }
+        }
+      
         //check if the player or enemies collide with game objects
         for(int i = 0; i < gameObjectFactory.gameObjects.size(); i++) {
            collisions = player1.footCollider.collide(gameObjectFactory.gameObjects.get(i).curCollider);
@@ -98,9 +114,9 @@ class Scene {
            if(collisions.size() > 0) {
               switch(gameObjectFactory.gameObjects.get(i).collisionEffect) {
                 case BLOCK:
-                  player1.bounce(collisions,1,0.001); 
+                  //player1.bounce(collisions,1,0.001); 
                   
-                  controls.addMessage(collisions.get(0).toString());
+                  //controls.addMessage(collisions.get(0).toString());
                   //TODO: give gameObject a bounciness value to use as the friction coefficient
                   //player1.stop();
                   
@@ -182,6 +198,10 @@ class Scene {
         
         player1.display(position);
         
+        for(CollisionLine line : collisionLines.lines) {
+          stroke(255,0,0);
+          line(line.a.x-position.x,line.a.y-position.y,line.b.x-position.x,line.b.y-position.y);
+        }
         
         
       break;
@@ -289,6 +309,10 @@ class Scene {
       
     JSONArray array = objMaster.getJSONArray("gameObjects");
     gameObjectFactory.loadGameObjects(array);
+      
+    array = objMaster.getJSONArray("collision_lines");
+      
+    collisionLines.load(array);
       
     map.loadMap(objMaster);
     

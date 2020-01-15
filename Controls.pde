@@ -43,9 +43,7 @@ class Controls {
   
   
   Controls(int ScrW, int ScrH, Scene iscene) {
-    PFont font;
-    font = createFont("Trattatello-48.vlw",48);
-    textFont(font);
+    
     
     messages = "";
     

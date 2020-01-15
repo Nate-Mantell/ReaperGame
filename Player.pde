@@ -18,9 +18,13 @@ class Player {
   
   PVector baseFriction, friction;
   
+  ArrayList<PVector> forces;
+  
+  
   int dx,dy;
   
   boolean sidescroll;
+  
   
   Player(PVector ipos, int ihp, int imhp, int imp, int immp, Weapon iweap, ArrayList<Sprite> isp, Collider ifootCollider, Scene iscene) {
     scene = iscene;
@@ -33,6 +37,8 @@ class Player {
     baseFriction = new PVector(0.8,0.96,0.8);
     friction = new PVector();
     friction.set(baseFriction);
+    
+    forces = new ArrayList<PVector>();
     
     sidescroll = true;
 
@@ -71,7 +77,8 @@ class Player {
   
   void walkRight() {
     if(state == 2) return;
-    vx = acc+arv;
+    //vx = acc+arv;
+    addForce(new PVector((acc+arv),0,0));
     //vy = 0;
     dx = 1;
     dy = 0;
@@ -81,7 +88,8 @@ class Player {
   
   void runRight() {
     if(state == 2) return;
-    vx = acc*2+arv;
+    //vx = acc*2+arv;
+    addForce(new PVector((acc*2+arv),0,0));
     //vy = 0;
     dx = 1;
     dy = 0;
@@ -91,7 +99,8 @@ class Player {
   
   void walkLeft() {
     if(state == 2) return;
-    vx = -(acc+arv);
+    //vx = -(acc+arv);
+    addForce(new PVector(-(acc+arv),0,0));
     //vy = 0;
     dx = -1;
     dy = 0;
@@ -101,7 +110,8 @@ class Player {
   
   void runLeft() {
     if(state == 2) return;
-    vx = -(acc*2+arv);
+    //vx = -(acc*2+arv);
+    addForce(new PVector(-(acc*2+arv),0,0));
     //vy = 0;
     dx = -1;
     dy = 0;
@@ -151,8 +161,11 @@ class Player {
     //soundEffects.playerEffects.get(1).play();
     
     if(sidescroll) {
-      if(vy >= -0.5 && vy <= 0.5) vy = -acc*5;
-      friction.set(baseFriction);
+      if(vy >= -0.5 && vy <= 0.5) {
+        //vy = -acc*5;
+        addForce(new PVector(0, -acc*5, 0));
+        friction.set(baseFriction);
+      }
     } else {
       if(position.z == 0) vz = acc*5;
     }
@@ -253,6 +266,9 @@ class Player {
     
     checkState();
     
+    //resolve all the forces applied this step to get the resultant change to velocity
+    resolveForces();
+    
     //update position with velocity
     position.x+=vx; position.y+=vy; position.z+=vz;
     
@@ -260,10 +276,12 @@ class Player {
     //gravity for jumping, ground collision, and friction
     if(sidescroll) {
       //if(vy < -0.5) {
-        vy+=0.5;
+        //vy+=0.5;
       //} else {
       //  vy = 0;
       //}
+      
+      addForce(new PVector(0,0.5,0));
       
       vx *= friction.x;
       vy *= friction.y;
@@ -286,6 +304,29 @@ class Player {
     
     updateColliderPos();
     
+  }
+  
+  void addForce(PVector f) {
+    forces.add(f);
+  }
+  
+  void resolveForces() {
+    PVector sumForces = new PVector();
+    for(PVector force: forces) {
+      sumForces.add(force);
+    }
+    vx += sumForces.x;
+    vy += sumForces.y;
+    forces.clear();
+  }
+  
+  PVector projectedVelocity() {
+    PVector sumForces = new PVector();
+    for(PVector force: forces) {
+      sumForces.add(force);
+    }
+    sumForces.add(vx,vy,vz);
+    return sumForces;
   }
   
   void bounce(ArrayList<Collision> collisions, float bfriction) {
@@ -319,7 +360,7 @@ class Player {
     updateColliderPos();
   }
   
-  
+  /*
   void bounce(ArrayList<Collision> collisions, float bfrictionx, float bfrictiony) {
     switch(collisions.get(0).determineDirection()) {
       case C_BOTTOM:
@@ -327,28 +368,176 @@ class Player {
         vy = -abs(vy) * bfrictiony;
         break;
       case C_LOWER_RIGHT:
+        vy = -abs(vy) * bfrictiony;
+        vx = -abs(vx) * bfrictionx;
+        break;
       case C_LOWER_LEFT:
         //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
         vy = -abs(vy) * bfrictiony;
-        vx = -vx;
+        vx = abs(vx) * bfrictionx;
         break;
       case C_RIGHT:
+        vx = -abs(vx) * bfrictionx;
+        break;
       case C_LEFT:
-        vx = -vx;
+        vx = abs(vx) * bfrictionx;
         break;
       case C_TOP:
         vy = abs(vy) * bfrictiony;
         break;
       case C_UPPER_RIGHT:
+        vy *= abs(vy) * bfrictiony;
+        vx = -abs(vx) * bfrictionx;
+        break;
       case C_UPPER_LEFT:
         vy *= abs(vy) * bfrictiony;
-        vx = -vx;
+        vx = abs(vx) * bfrictionx;
         break;
       case C_UNKNOWN:
         break;
     }
     
     updateColliderPos();
+  }
+  */
+  
+  /*
+  void bounce(ArrayList<Collision> collisions, float bfrictionx, float bfrictiony) {
+    PVector pv = projectedVelocity();
+    
+    Collision c = collisions.get(0);
+    switch(c.determineDirection()) {
+      case C_BOTTOM:
+        //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
+        //vy = -abs(vy) * bfrictiony;
+        addForce(new PVector(-abs(pv.y)-(c.a.cy2-c.b.cy1),0));
+        break;
+      case C_LOWER_RIGHT:
+        //vy = -abs(vy) * bfrictiony;
+        //vx = -abs(vx) * bfrictionx;
+        addForce(new PVector(-abs(pv.x)-(c.a.cx2-c.b.cx1),-abs(pv.y)-(c.a.cy2-c.b.cy1),0));
+        break;
+      case C_LOWER_LEFT:
+        //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
+        //vy = -abs(vy) * bfrictiony;
+        //vx = abs(vx) * bfrictionx;
+        addForce(new PVector(abs(pv.x)+(c.b.cx2-c.a.cx1),-abs(pv.y)-(c.a.cy2-c.b.cy1),0));
+        break;
+      case C_RIGHT:
+        //vx = -abs(vx) * bfrictionx;
+        addForce(new PVector(-abs(pv.x)-(c.a.cx2-c.b.cx1),0,0));
+        break;
+      case C_LEFT:
+        //vx = abs(vx) * bfrictionx;
+        addForce(new PVector(abs(pv.x)+(c.b.cx2-c.a.cx1),0,0));
+        break;
+      case C_TOP:
+        //vy = abs(vy) * bfrictiony;
+        addForce(new PVector(abs(pv.y)+(c.b.cy2-c.a.cy1),0));
+        break;
+      case C_UPPER_RIGHT:
+        //vy *= abs(vy) * bfrictiony;
+        //vx = -abs(vx) * bfrictionx;
+        addForce(new PVector(-abs(pv.x)-(c.a.cx2-c.b.cx1),abs(pv.y)+(c.b.cy2-c.a.cy1),0));
+        break;
+      case C_UPPER_LEFT:
+        //vy *= abs(vy) * bfrictiony;
+        //vx = abs(vx) * bfrictionx;
+        addForce(new PVector(abs(pv.x)+(c.b.cx2-c.a.cx1),abs(pv.y)+(c.b.cy2-c.a.cy1),0));
+        break;
+      case C_UNKNOWN:
+        break;
+    }
+    
+    updateColliderPos();
+  }
+  */
+  
+  void bounce(ArrayList<Collision> collisions, float bfrictionx, float bfrictiony) {
+    PVector pv = projectedVelocity();
+    
+    Collision c = collisions.get(0);
+    switch(c.determineDirection()) {
+      case C_BOTTOM:
+        //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
+        //vy = -abs(vy) * bfrictiony;
+        addForce(new PVector(-abs(pv.y),0));
+        break;
+      case C_LOWER_RIGHT:
+        //vy = -abs(vy) * bfrictiony;
+        //vx = -abs(vx) * bfrictionx;
+        addForce(new PVector(-abs(pv.x),-abs(pv.y),0));
+        break;
+      case C_LOWER_LEFT:
+        //position.y = collisions.get(0).b.cy1 - (curCollider.cy2-curCollider.cy1);
+        //vy = -abs(vy) * bfrictiony;
+        //vx = abs(vx) * bfrictionx;
+        addForce(new PVector(abs(pv.x),-abs(pv.y),0));
+        break;
+      case C_RIGHT:
+        //vx = -abs(vx) * bfrictionx;
+        addForce(new PVector(-abs(pv.x),0,0));
+        break;
+      case C_LEFT:
+        //vx = abs(vx) * bfrictionx;
+        addForce(new PVector(abs(pv.x),0,0));
+        break;
+      case C_TOP:
+        //vy = abs(vy) * bfrictiony;
+        addForce(new PVector(abs(pv.y),0));
+        break;
+      case C_UPPER_RIGHT:
+        //vy *= abs(vy) * bfrictiony;
+        //vx = -abs(vx) * bfrictionx;
+        addForce(new PVector(-abs(pv.x),abs(pv.y),0));
+        break;
+      case C_UPPER_LEFT:
+        //vy *= abs(vy) * bfrictiony;
+        //vx = abs(vx) * bfrictionx;
+        addForce(new PVector(abs(pv.x),abs(pv.y),0));
+        break;
+      case C_UNKNOWN:
+        break;
+    }
+    
+    //updateColliderPos();
+  }
+  
+  void bounceLine(ArrayList<LineCollision> collisions, float bfrictionx, float bfrictiony) {
+    PVector pv = projectedVelocity();
+    
+    LineCollision c = collisions.get(0);
+    
+    /*float cdx = 0, cdy = 0;
+    
+    if(pv.x > 0) {
+      cdx = -1;
+    } else {
+      cdx = 1;
+    }
+    
+    if(pv.y > 0) {
+      cdy = -1;
+    } else {
+      cdy = 1;
+    }*/
+    
+    //PVector ln = c.b.getNormalVector(CollisionLineDirection.UP);
+    //addForce(new PVector(abs(pv.x*ln.x),abs(pv.y*ln.y),0));
+    
+    if(c.b.isHorizontal(50)) {
+      PVector f = new PVector(0,-pv.y/*+(c.a.cy2-c.b.getYatX((c.a.cx2-c.a.cx1)/2))*/,0);
+      addForce(f);
+      /*print("PV=("+(pv.x)+","+(pv.y)+")"+
+            " CY2="+(c.a.cy2)+
+            " CX="+((c.a.cx2-c.a.cx1)/2)+
+            " LineYatX="+(c.b.getYatX((c.a.cx2-c.a.cx1)/2))+
+            " CF="+(c.a.cy2-c.b.getYatX((c.a.cx2-c.a.cx1)/2)));
+      */
+      //print("Added bounce force: " + f);
+    }
+    
+    //updateColliderPos();
   }
   
    void bounce(ArrayList<Collision> collisions) {
