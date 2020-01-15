@@ -122,14 +122,14 @@ class Controls {
     
     
     //draw the butttons
-    buttonUp.display();
+    /*buttonUp.display();
     buttonLeft.display();
     buttonRight.display();
     buttonDown.display();
     buttonStop.display();
     buttonA.display();
     buttonB.display();
-    //buttonMenu.display();
+    //buttonMenu.display();*/
     
     /*
     for(int i = 0; i < weaponToggles.size(); i++) {
@@ -139,9 +139,9 @@ class Controls {
     
     
     //draw the hud
-    textSize(32);
+    textSize(14);
     fill(0,255,0);
-    text(messages,controls.x+controls.w-500,controls.y+50);
+    text(messages,controls.x+controls.w-400,controls.y+50);
     
     /*
     textSize(32);

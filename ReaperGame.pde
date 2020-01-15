@@ -25,9 +25,9 @@ GameObjectFactory gameObjectFactory;
 void setup() {
   size(600,800);
   
-  PFont font;
-  font = createFont("NightmarePills-BV2w.ttf",18);
-  textFont(font);
+  //PFont font;
+  //font = createFont("NightmarePills-BV2w.ttf",14);
+  //textFont(font);
   
   mapImg[0] = new Animation("grass1",".png",1,0,false,false);
   mapImg[1] = new Animation("rocks1",".png",1,0,false,false);

@@ -14,6 +14,8 @@ class PlayerAction {
 
 class Scene {
   
+  String messages;
+  
   PVector position;
   
   Map map;
@@ -45,6 +47,8 @@ class Scene {
   
   
   Scene(Animation[] iplayerAnimations, GameObjectFactory igameObjectFactory, Map imap, int scrW, int scrH) {
+    messages = "";
+    
     position = new PVector(0,0);
     playerAnimations = iplayerAnimations;
     
@@ -93,8 +97,10 @@ class Scene {
       break;
       case SIDESCROLL:
       
-        resolveControls();
+      
         player1.step();
+        resolveControls();
+        
       
       
         for(CollisionLine line: collisionLines.lines) {
@@ -103,7 +109,7 @@ class Scene {
           if(lineCollisions.size() > 0) {
             player1.bounceLine(lineCollisions,1,0.001);
             
-            controls.addMessage("Line Collision");
+            //controls.addMessage("Line Collision");
           }
         }
       
@@ -203,6 +209,9 @@ class Scene {
           line(line.a.x-position.x,line.a.y-position.y,line.b.x-position.x,line.b.y-position.y);
         }
         
+        flushMessages();
+        
+        
         
       break;
     }
@@ -274,16 +283,16 @@ class Scene {
   void resolveControls() {
       if(playerActions.WALKRIGHT) {
         player1.walkRight();
-        controls.addMessage("walk right");
+        //controls.addMessage("walk right");
       }
       if(playerActions.WALKLEFT) {
         player1.walkLeft();
-        controls.addMessage("walk left");
+        //controls.addMessage("walk left");
       }
       if(playerActions.JUMP) {
         player1.jump();
         playerActions.JUMP = false;
-        controls.addMessage("jump");
+        //controls.addMessage("jump");
       }
       if(playerActions.ATTACK) {
       
@@ -318,6 +327,18 @@ class Scene {
     
   }
   
+  void addMessage(String message) {
+     messages += "\n" + message;
+  }
+  
+  void clearMessages() {
+    messages = "";
+  }
+  
+  void flushMessages() {
+    controls.addMessage(messages);
+    clearMessages();
+  }
   
   void sceneDidChange() {
     changed = true;
@@ -326,4 +347,5 @@ class Scene {
   void sceneFinishedDisplayingChanges() {
     changed = false;
   }
+  
 }

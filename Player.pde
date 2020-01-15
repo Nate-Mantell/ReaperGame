@@ -283,9 +283,7 @@ class Player {
       
       addForce(new PVector(0,0.5,0));
       
-      vx *= friction.x;
-      vy *= friction.y;
-      vz *= friction.z;
+      
     } else {
       if(position.z > 0) {
         vz-=0.5;
@@ -311,12 +309,24 @@ class Player {
   }
   
   void resolveForces() {
+    String fstr = "";
     PVector sumForces = new PVector();
     for(PVector force: forces) {
       sumForces.add(force);
+      fstr+="("+int(force.x*1000)+","+int(force.y*1000)+"), ";
     }
+    
+    fstr+="\nSUM F=("+int(sumForces.x*1000)+","+int(sumForces.y*1000)+
+         "), FRI=("+int(friction.x*1000)+","+int(friction.y*1000)+
+         "), PV=("+int(vx*1000)+","+int(vy*1000)+")";
+    scene.addMessage(fstr);
+    
     vx += sumForces.x;
     vy += sumForces.y;
+    
+    vx *= friction.x;
+    vy *= friction.y;
+    
     forces.clear();
   }
   
@@ -535,6 +545,9 @@ class Player {
             " CF="+(c.a.cy2-c.b.getYatX((c.a.cx2-c.a.cx1)/2)));
       */
       //print("Added bounce force: " + f);
+    } else if(c.b.isVertical(50)) {
+      PVector f = new PVector(-pv.x,0,0);
+      addForce(f);
     }
     
     //updateColliderPos();
